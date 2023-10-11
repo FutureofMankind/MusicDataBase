@@ -1,7 +1,6 @@
 --название и продолжительность самого длительного трека
-SELECT name, duration FROM Tracks
-ORDER BY duration DESC 
-LIMIT 1;
+SELECT name FROM Tracks
+WHERE duration = (SELECT MAX(duration) FROM Tracks);
 
 --название треков, продолжительность которых не менее 3,5 минуты
 SELECT name FROM Tracks
@@ -36,18 +35,21 @@ join Albums on Tracks.Album_id = Albums.Album_id
 group by Album_name;
 
 --Все исполнители, которые не выпустили альбомы в 2020 году
-select name from Artists 
-join ArtistsAlbums on Artists.Artist_id = ArtistsAlbums.Artist_id
-join Albums on Albums.Album_id = ArtistsAlbums.Album_id
-where album_year not between '20200101' and '20201231' 
-group by name;
+SELECT artists.name FROM Artists
+JOIN
+    (SELECT DISTINCT artists.id, artists.name FROM Artists
+     join ArtistsAlbums on Artists.id = ArtistsAlbums.Artist_id
+     join Albums on Albums.id = ArtistsAlbums.Album_id
+     WHERE albums.year = 2020)
+     AS artists2020
+ON artists.id = artists2020.id
+WHERE artists2020.id IS NULL;
 
 --Названия сборников, в которых присутствует конкретный исполнитель (Cradle of Filth)
-select name from Compilations
-join CompilationsTracks on CompilationsTracks.Compilation_id = Compilations.Compilation_id
-join Tracks on CompilationsTracks.Track_id = Tracks.Track_id
-join Albums on Tracks.Album_id = Albums.Album_id
-join ArtistsAlbums on ArtistsAlbums.Album_id = Albums.Album_id
-join Artists on ArtistsAlbums.Artist_id = Artists.Artist_id
-where Artist_name = 'Cradle of Filth'
-group by name
+select compilations.name from Compilations
+join CompilationsTracks on CompilationsTracks.Compilation_id = Compilations.id
+join Tracks on CompilationsTracks.Track_id = Tracks.id
+join Albums on Tracks.Album_id = Albums.id
+join ArtistsAlbums on ArtistsAlbums.Album_id = Albums.id
+join Artists on ArtistsAlbums.Artist_id = Artists.id
+where Artists.name = 'Cradle of Filth'
